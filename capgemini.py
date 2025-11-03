@@ -253,7 +253,7 @@ N ああああ
 
 """,
         help=help_text
-    ))
+    )
 
 # --- キャッシュ管理 ---
 cur_hash = hash(input_text.strip())
@@ -336,6 +336,7 @@ else:
 # --- フッター ---
 st.markdown("---")
 st.markdown('<div style="text-align: right; font-size: 12px; color: #C5D6B9;">© 2025 kimika Inc.</div>', unsafe_allow_html=True)
+
 
 
 

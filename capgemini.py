@@ -240,7 +240,20 @@ with col2_top: st.header('')
 # --- 2段目：メインのテキストエリア ---
 col1_main, col2_main = st.columns(2)
 with col1_main:
-    input_text = st.text_area("　ここに元原稿をペーストして Ctrl+Enter を押してください。", height=500, placeholder="")
+    input_text = st.text_area("　ここに元原稿をペーストして Ctrl+Enter を押してください。", height=500, placeholder="""①キャプションをテキストで書き出した形式
+00;00;00;00 - 00;00;02;29
+N ああああ
+
+②xmlをサイトで変換した形式
+００:００:１５　〜　００:００：１８
+N ああああ
+
+この２つの形式に対応しています。ペーストして　Ctrl+Enter　を押して下さい
+①の方が細かい変換をするのでオススメです
+
+""",
+        help=help_text
+    ))
 
 # --- キャッシュ管理 ---
 cur_hash = hash(input_text.strip())
@@ -323,6 +336,7 @@ else:
 # --- フッター ---
 st.markdown("---")
 st.markdown('<div style="text-align: right; font-size: 12px; color: #C5D6B9;">© 2025 kimika Inc.</div>', unsafe_allow_html=True)
+
 
 
 

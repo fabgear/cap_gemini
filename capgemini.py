@@ -240,8 +240,8 @@ N ああああ
 ００:００:１５　〜　００:００：１８
 N ああああ
 
-この２つの形式に対応しています。
-①の方が細かい変換（「半」や「(～秒)」）に対応しているためオススメです。
+どちらにも対応しています
+①の方が細かい変換に対応しているためオススメです
 """
 
 help_text = """
@@ -343,6 +343,7 @@ else:
 # --- フッター ---
 st.markdown("---")
 st.markdown('<div style="text-align: right; font-size: 12px; color: #C5D6B9;">© 2025 kimika Inc.</div>', unsafe_allow_html=True)
+
 
 
 

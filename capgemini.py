@@ -288,7 +288,7 @@ if st.session_state["last_input_hash"] != cur_hash:
     st.session_state["last_input_hash"] = cur_hash
 
 # --- 3段目：コントロールエリア ---
-col1_opt, col2_opt, col3_opt, _ = st.columns([1.5, 2, 3, 7.5]) 
+col1_opt, col2_opt, col3_opt, _ = st.columns([1.5, 1.5, 3, 7.5]) 
 with col1_opt: n_force_insert = st.checkbox("Ｎ強制挿入", value=True)
 with col2_opt: mm_ss_colon = st.checkbox("ｍｍ：ｓｓ", value=False)
 with col3_opt: ai_check_flag = st.checkbox("誤字脱字チェック", value=False)
@@ -365,6 +365,7 @@ st.markdown(
 )
 
 st.markdown('<div style="height: 200px;"></div>', unsafe_allow_html=True)
+
 
 
 

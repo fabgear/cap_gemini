@@ -241,13 +241,15 @@ with col2_top: st.header('')
 
 # --- 2段目：メインのテキストエリア【変更】---
 # ▼▼▼ placeholderとhelp用のテキストを定義 ▼▼▼
-placeholder_text = """**対応フォーマット**
+placeholder_text = """Supported Formats  
+  
+➤ Recommended:
 00;00;00;00 - 00;00;02;29
-N ああああ
+Nああああ
 
+➤ Standard:
 ００:００:１５　〜　００:００：１８
-N ああああ
-
+Nああああ
 """
 
 help_text = """
@@ -362,6 +364,7 @@ st.markdown(
 )
 
 st.markdown('<div style="height: 200px;"></div>', unsafe_allow_html=True)
+
 
 
 

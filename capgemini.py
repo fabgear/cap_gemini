@@ -325,7 +325,7 @@ if input_text:
 else:
     # 入力がない時に右側の高さを維持してレイアウト崩れを防ぐ
     with col2_main:
-        st.markdown('<div style="height: 538px;"></div>', unsafe_allow_html=True)
+        st.markdown('<div style="height: 500px;"></div>', unsafe_allow_html=True)
             
 # --- フッター ---
 st.markdown("---")
@@ -337,3 +337,4 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+

@@ -344,7 +344,10 @@ else:
             
 # --- フッター ---
 st.markdown("---")
-st.markdown('<div style="text-align: right; font-size: 12px; color: #C5D6B9;">© 2025 kimika Inc.</div>', unsafe_allow_html=True)
+st.markdown('<div style="text-align: right; font-size: 12px; color: #C5D6B9;">
+        © 2025 kimika Inc. All rights reserved.
+    </div>', unsafe_allow_html=True)
+
 
 
 

@@ -223,9 +223,9 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
 # ===============================================================
 # ▼▼▼ Streamlit UI ▼▼▼
 # ===============================================================
-st.set_page_config(page_title="Caption to Narration", page_icon="📝", layout="wide")
-st.title('ProofBOX')
-st.caption('　ナレーション原稿作成ツール')
+st.set_page_config(page_title="Syncraft", page_icon="📝", layout="wide")
+st.title('Syncraft')
+st.caption('　ナレーション原稿作成ツール with gemini(β)')
 
 GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY", "")
 
@@ -365,6 +365,7 @@ st.markdown(
 )
 
 st.markdown('<div style="height: 200px;"></div>', unsafe_allow_html=True)
+
 
 
 

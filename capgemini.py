@@ -1,5 +1,5 @@
 # ===========================================
-# Caption to Narration - 最終完成版 (UI改善)
+# Caption to Narration - 最終完成版 (ヘルプテキスト追加)
 # ===========================================
 
 import streamlit as st
@@ -11,22 +11,22 @@ from google.genai.errors import APIError
 
 
 # ===============================================================
-# ▼▼▼ AIチェックの本体（Gemini API呼び出し部分）【変更】▼▼▼
+# ▼▼▼ AIチェックの本体（Gemini API呼び出し部分）▼▼▼
 # ===============================================================
 def check_narration_with_gemini(narration_blocks, api_key):
     """
     Gemini APIを使用してナレーションをチェックする。
-    【変更】入力に番号を振り、AIが出力でその番号を使うように指示。
+    入力に番号を振り、AIが出力でその番号を使うように指示。
     """
     if not api_key:
         return "エラー：Gemini APIキーが設定されていません。Streamlit Secretsを確認してください。"
 
     try:
         client = genai.Client(api_key=api_key)
-        # 【変更】AIに渡すテキストに番号を付与
+        # AIに渡すテキストに番号を付与
         formatted_text = "\n".join([f"No.{i+1}: {b['text']}" for i, b in enumerate(narration_blocks)])
 
-        # 【変更】プロンプトを更新。番号で位置を返してもらうように指示
+        # プロンプトを更新。番号で位置を返してもらうように指示
         prompt = f"""
         あなたはプロフェッショナルな校正者です。
         以下の番号付きナレーション原稿リストを厳密にチェックしてください。
@@ -59,12 +59,11 @@ def check_narration_with_gemini(narration_blocks, api_key):
 
 
 # ===============================================================
-# ▼▼▼ ナレーション変換エンジン【変更】▼▼▼
+# ▼▼▼ ナレーション変換エンジン ▼▼▼
 # ===============================================================
 def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=False, highlight_indices=None):
     """
     ナレーションスクリプトを生成する。
-    【変更】
     - highlight_indices を受け取り、該当行にマーカーを付ける機能を追加。
     - 各ブロックの開始タイムのリストを返す機能を追加。
     """
@@ -117,7 +116,7 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
     output_lines = []
     narration_blocks_for_ai = []
     parsed_blocks = []
-    block_start_times = [] # 【追加】各ブロックの開始タイムを格納
+    block_start_times = []
 
     for block in blocks:
         line_with_frames = re.sub(r'(\d{2}:\d{2}:\d{2})(?![:.]\d{2})', r'\1.00', block['time'])
@@ -136,7 +135,6 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
 
     previous_end_hh = None
     for i, block in enumerate(parsed_blocks):
-        # （...タイムコード計算、Hマーカーなどのロジックは変更なし...）
         start_hh, start_mm, start_ss, start_fr = block['start_hh'], block['start_mm'], block['start_ss'], block['start_fr']
         end_hh, end_mm, end_ss, end_fr = block['end_hh'], block['end_mm'], block['end_ss'], block['end_fr']
         should_insert_h_marker = False
@@ -150,7 +148,7 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
         if should_insert_h_marker:
              output_lines.append("")
              output_lines.append(f"【{str(marker_hh_to_display).translate(to_zenkaku_num)}Ｈ】")
-            # output_lines.append("")
+             output_lines.append("")
         previous_end_hh = end_hh
         total_seconds_in_minute_loop = (start_mm % 60) * 60 + start_ss
         spacer = ""; is_half_time = False; base_time_str = ""
@@ -166,10 +164,8 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
             base_time_str = f"{display_mm:02d}{display_ss:02d}"; spacer = "　　　"
         colon_time_str = f"{base_time_str[:2]}：{base_time_str[2:]}" if mm_ss_colon_flag else base_time_str
         formatted_start_time = f"{colon_time_str.translate(to_zenkaku_num)}半" if is_half_time else colon_time_str.translate(to_zenkaku_num)
+        block_start_times.append(formatted_start_time)
         
-        block_start_times.append(formatted_start_time) # 【追加】生成した開始タイムをリストに保存
-        
-        # （...話者記号、本文、ENDタイムのロジックは変更なし...）
         speaker_symbol = 'Ｎ'; text_content = block['text']; body = ""
         if n_force_insert_flag:
             tc = text_content.strip()
@@ -204,9 +200,7 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
             else: formatted_end_time = f"{adj_ss:02d}".translate(to_zenkaku_num)
             end_string = f" (～{formatted_end_time})"
 
-        # 【変更】ハイライト表示のためのプレフィックスを追加
         line_prefix = "🔴 " if i in highlight_indices else ""
-        
         if n_force_insert_flag:
             output_lines.append(f"{line_prefix}{formatted_start_time}{spacer}{speaker_symbol}　{body}{end_string}")
         else:
@@ -215,12 +209,11 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
         if add_blank_line and i < len(parsed_blocks) - 1:
             output_lines.append("")
             
-    # 【変更】戻り値にstart_timesを追加
     return {"narration_script": "\n".join(output_lines), "ai_data": narration_blocks_for_ai, "start_times": block_start_times}
 
 
 # ===============================================================
-# ▼▼▼ Streamlit UI【変更】▼▼▼
+# ▼▼▼ Streamlit UI ▼▼▼
 # ===============================================================
 st.set_page_config(page_title="Caption to Narration", page_icon="📝", layout="wide")
 st.title('Caption to Narration')
@@ -234,13 +227,12 @@ st.markdown("""<style> textarea { font-size: 14px !important; } </style>""", uns
 
 # --- 1段目：タイトル ---
 col1_top, col2_top = st.columns(2)
-with col1_top: st.header('')
-with col2_top: st.header('')
+with col1_top: st.header('ナレーション原稿形式に変換します')
+with col2_top: st.header('コピーしてお使いください')
 
-# --- 2段目：メインのテキストエリア ---
-col1_main, col2_main = st.columns(2)
-with col1_main:
-    input_text = st.text_area("　ここに元原稿をペーストして Ctrl+Enter を押してください。", height=500, placeholder="""①キャプションをテキストで書き出した形式
+# --- 2段目：メインのテキストエリア【変更】---
+# ▼▼▼ placeholderとhelp用のテキストを定義 ▼▼▼
+placeholder_text = """①キャプションをテキストで書き出した形式
 00;00;00;00 - 00;00;02;29
 N ああああ
 
@@ -248,12 +240,32 @@ N ああああ
 ００:００:１５　〜　００:００：１８
 N ああああ
 
-この２つの形式に対応しています。ペーストして　Ctrl+Enter　を押して下さい
-①の方が細かい変換をするのでオススメです
+この２つの形式に対応しています。
+①の方が細かい変換（「半」や「(～秒)」）に対応しているためオススメです。
+"""
 
-""",
+help_text = """
+【機能詳細】
+・ENDタイム(秒のみ)が自動で入ります。分をまたぐ時は(分秒)表記になり、次のナレーションと繋がる時は割愛されます。
+・H（時間）をまたぐときに自動で仕切りが入ります。
+・「N強制挿入」がONの場合、話者記号として自動で全角の「Ｎ」が挿入されます。ＶＯや実況などはそのまま表記されます。
+・ナレーション本文の半角英数字は全て全角に変換されます。
+・「ｍｍ：ｓｓで出力」がONの場合、タイムコードの分と秒の間にコロンが入ります。
+・「誤字脱字をAIでチェック」をONにすると、AIがナレーション本文の校正を行い、修正提案を表示します。
+"""
+# ▲▲▲ ここまで ▲▲▲
+
+col1_main, col2_main = st.columns(2)
+with col1_main:
+    # ▼▼▼ st.text_area に placeholder と help を追加 ▼▼▼
+    input_text = st.text_area(
+        label="　ここに元原稿をペーストして Ctrl+Enter を押してください。", 
+        height=500,
+        placeholder=placeholder_text,
         help=help_text
     )
+    # ▲▲▲ ここまで ▲▲▲
+
 
 # --- キャッシュ管理 ---
 cur_hash = hash(input_text.strip())
@@ -262,15 +274,14 @@ if st.session_state["last_input_hash"] != cur_hash:
     st.session_state["last_input_hash"] = cur_hash
 
 # --- 3段目：コントロールエリア ---
-col1_opt, col2_opt, col3_opt, _ = st.columns([1.5, 2, 2, 9]) 
+col1_opt, col2_opt, col3_opt, _ = st.columns([1.5, 2, 3, 7.5]) 
 with col1_opt: n_force_insert = st.checkbox("N強制挿入", value=True)
 with col2_opt: mm_ss_colon = st.checkbox("ｍｍ：ｓｓで出力", value=False)
-with col3_opt: ai_check_flag = st.checkbox("誤字脱字チェック", value=False)
+with col3_opt: ai_check_flag = st.checkbox("誤字脱字をAIでチェック", value=False)
 
 # --- 4段目：変換実行と結果表示 ---
 if input_text:
     try:
-        # 1. 最初に基本データを生成（ハイライトなし、開始タイムリスト取得のため）
         initial_result = convert_narration_script(input_text, n_force_insert, mm_ss_colon)
         ai_data = initial_result["ai_data"]
         block_start_times = initial_result["start_times"]
@@ -278,7 +289,6 @@ if input_text:
         highlight_indices = set()
         ai_display_text = ""
 
-        # 2. AIチェックがONの場合、結果を処理してハイライト対象と表示用テキストを作成
         if ai_check_flag:
             with st.spinner("Geminiが誤字脱字をチェック中..."):
                 if not st.session_state.get("ai_result_cache"):
@@ -287,7 +297,6 @@ if input_text:
             
             ai_result_md = st.session_state.get("ai_result_cache", "")
             
-            # AIの結果を解析して、表示用に整形
             if ai_result_md and "問題ありませんでした" not in ai_result_md:
                 new_table_header = "| 開始タイム | 修正提案 | 理由 |\n|---|---|---|"
                 new_table_rows = []
@@ -296,14 +305,13 @@ if input_text:
                         try:
                             parts = [p.strip() for p in line.strip().strip('|').split('|')]
                             num_str, suggestion, reason = parts[0], parts[1], parts[2]
-                            # "No.5" -> 4 のようにインデックスに変換
                             index = int(re.search(r'\d+', num_str).group()) - 1
                             if 0 <= index < len(block_start_times):
                                 highlight_indices.add(index)
                                 start_time = block_start_times[index]
                                 new_table_rows.append(f"| {start_time} | {suggestion} | {reason} |")
                         except (ValueError, IndexError):
-                            continue # パース失敗行はスキップ
+                            continue
                 
                 if new_table_rows:
                     ai_display_text = new_table_header + "\n" + "\n".join(new_table_rows)
@@ -312,14 +320,11 @@ if input_text:
             else:
                 ai_display_text = ai_result_md
 
-        # 3. ハイライト情報を元に、最終的なナレーション原稿を再生成
         final_result = convert_narration_script(input_text, n_force_insert, mm_ss_colon, highlight_indices)
         
-        # 4. 変換結果を右のエリアに表示
         with col2_main:
              st.text_area("　", value=final_result["narration_script"], height=500)
              
-        # 5. 整形したAIチェック結果を下部に表示
         if ai_check_flag:
             st.markdown("---")
             st.subheader("📝 AI校正チェック結果")
@@ -331,13 +336,8 @@ if input_text:
             st.text_area("　", value="", height=500, disabled=True)
 else:
     with col2_main:
-        st.markdown('<div style="height: 500px;"></div>', unsafe_allow_html=True)
+        st.markdown('<div style="height: 538px;"></div>', unsafe_allow_html=True)
             
 # --- フッター ---
 st.markdown("---")
 st.markdown('<div style="text-align: right; font-size: 12px; color: #C5D6B9;">© 2025 kimika Inc.</div>', unsafe_allow_html=True)
-
-
-
-
-

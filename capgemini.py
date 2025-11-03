@@ -227,7 +227,13 @@ st.set_page_config(page_title="Caption to Narration", page_icon="📝", layout="
 st.title('ProofBOX')
 st.caption('　ナレーション原稿作成ツール')
 
-st.markdown("""<style> body { overflow-y: scroll; } </style>""", unsafe_allow_html=True)
+st.markdown("""
+    <style>
+        main {
+            overflow-y: scroll;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY", "")
 
@@ -365,6 +371,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 
 

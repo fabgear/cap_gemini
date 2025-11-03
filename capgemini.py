@@ -148,7 +148,7 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
         if should_insert_h_marker:
              output_lines.append("")
              output_lines.append(f"【{str(marker_hh_to_display).translate(to_zenkaku_num)}Ｈ】")
-             output_lines.append("")
+           #  output_lines.append("")
         previous_end_hh = end_hh
         total_seconds_in_minute_loop = (start_mm % 60) * 60 + start_ss
         spacer = ""; is_half_time = False; base_time_str = ""
@@ -353,6 +353,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 
 

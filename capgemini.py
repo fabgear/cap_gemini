@@ -229,8 +229,8 @@ st.caption('　ナレーション原稿作成ツール')
 
 st.markdown("""
     <style>
-        main {
-            overflow-y: scroll;
+        [data-testid="stAppViewContainer"] {
+            min-height: 101vh;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -371,6 +371,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 
 

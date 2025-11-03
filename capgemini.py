@@ -227,8 +227,8 @@ st.markdown("""<style> textarea { font-size: 14px !important; } </style>""", uns
 
 # --- 1段目：タイトル ---
 col1_top, col2_top = st.columns(2)
-with col1_top: st.header('ナレーション原稿形式に変換します')
-with col2_top: st.header('コピーしてお使いください')
+with col1_top: st.header('')
+with col2_top: st.header('')
 
 # --- 2段目：メインのテキストエリア【変更】---
 # ▼▼▼ placeholderとhelp用のテキストを定義 ▼▼▼
@@ -277,7 +277,7 @@ if st.session_state["last_input_hash"] != cur_hash:
 col1_opt, col2_opt, col3_opt, _ = st.columns([1.5, 2, 3, 7.5]) 
 with col1_opt: n_force_insert = st.checkbox("N強制挿入", value=True)
 with col2_opt: mm_ss_colon = st.checkbox("ｍｍ：ｓｓで出力", value=False)
-with col3_opt: ai_check_flag = st.checkbox("誤字脱字をAIでチェック", value=False)
+with col3_opt: ai_check_flag = st.checkbox("誤字脱字チェック", value=False)
 
 # --- 4段目：変換実行と結果表示 ---
 if input_text:
@@ -323,7 +323,7 @@ if input_text:
         final_result = convert_narration_script(input_text, n_force_insert, mm_ss_colon, highlight_indices)
         
         with col2_main:
-             st.text_area("　", value=final_result["narration_script"], height=500)
+             st.text_area("　変換完了！コピーしてお使いください", value=final_result["narration_script"], height=500)
              
         if ai_check_flag:
             st.markdown("---")
@@ -336,8 +336,9 @@ if input_text:
             st.text_area("　", value="", height=500, disabled=True)
 else:
     with col2_main:
-        st.markdown('<div style="height: 538px;"></div>', unsafe_allow_html=True)
+        st.markdown('<div style="height: 500px;"></div>', unsafe_allow_html=True)　#ここ500pxです。いつも538と書いてくる
             
 # --- フッター ---
 st.markdown("---")
 st.markdown('<div style="text-align: right; font-size: 12px; color: #C5D6B9;">© 2025 kimika Inc.</div>', unsafe_allow_html=True)
+

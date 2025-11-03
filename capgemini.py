@@ -336,9 +336,10 @@ if input_text:
             st.text_area("　", value="", height=500, disabled=True)
 else:
     with col2_main:
-        st.markdown('<div style="height: 500px;"></div>', unsafe_allow_html=True)　#ここ500pxです。いつも538と書いてくる
+        st.markdown('<div style="height: 500px;"></div>', unsafe_allow_html=True)#ここ500pxです。いつも538と書いてくる
             
 # --- フッター ---
 st.markdown("---")
 st.markdown('<div style="text-align: right; font-size: 12px; color: #C5D6B9;">© 2025 kimika Inc.</div>', unsafe_allow_html=True)
+
 

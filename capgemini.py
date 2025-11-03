@@ -225,6 +225,7 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
 # ===============================================================
 st.set_page_config(page_title="Caption to Narration", page_icon="📝", layout="wide")
 st.title('Caption to Narration')
+st.caption('Caption to Narration, seamlessly.')
 
 GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY", "")
 
@@ -362,6 +363,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 
 

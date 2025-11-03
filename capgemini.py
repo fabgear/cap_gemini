@@ -205,7 +205,7 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
             adj_mm_display = adj_mm % 60
             if start_hh != end_hh or (start_mm % 60) != adj_mm_display: formatted_end_time = f"{adj_mm_display:02d}{adj_ss:02d}".translate(to_zenkaku_num)
             else: formatted_end_time = f"{adj_ss:02d}".translate(to_zenkaku_num)
-            end_string = f" 　／{formatted_end_time}"
+            end_string = f" ／{formatted_end_time}" #エンドタイムのフォーマット
 
         line_prefix = "🔴" if i in highlight_indices else ""
         if n_force_insert_flag:
@@ -361,6 +361,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 
 

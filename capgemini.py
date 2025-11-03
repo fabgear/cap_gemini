@@ -304,7 +304,7 @@ if input_text:
         ai_display_text = ""
 
         if ai_check_flag:
-            with st.spinner("Geminiが誤字脱字をチェック中..."):
+            with st.spinner("Geminiが誤字脱字をチェック中...数分お待ちください🙇"):
                 if not st.session_state.get("ai_result_cache"):
                     ai_result_md = check_narration_with_gemini(ai_data, GEMINI_API_KEY)
                     st.session_state["ai_result_cache"] = ai_result_md
@@ -363,6 +363,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 
 

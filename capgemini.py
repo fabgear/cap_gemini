@@ -243,7 +243,7 @@ st.markdown("""
 
         /* スクロールバーの背景（トラック） */
         main::-webkit-scrollbar-track {
-            background: #2e2e2e; /* 濃いグレー */
+            background: #FFFFFFFF; /* 濃いグレー */
         }
 
         /* スクロールバーのつまみ（ドラッグする部分） */
@@ -397,7 +397,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-#st.markdown('<div style="height: 200px;"></div>', unsafe_allow_html=True)
+st.markdown('<div style="height: 200px;"></div>', unsafe_allow_html=True)
+
 
 
 

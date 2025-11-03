@@ -227,39 +227,6 @@ st.set_page_config(page_title="Caption to Narration", page_icon="📝", layout="
 st.title('ProofBOX')
 st.caption('　ナレーション原稿作成ツール')
 
-st.markdown("""
-    <style>
-        /* レイアウト崩れを防ぐために、常にスクロール可能な高さを確保 */
-        [data-testid="stAppViewContainer"] {
-            min-height: 101vh;
-        }
-
-        /* --- スクロールバーのスタイル --- */
-
-        /* スクロールバー全体の幅 */
-        main::-webkit-scrollbar {
-            width: 12px;
-        }
-
-        /* スクロールバーの背景（トラック） */
-        main::-webkit-scrollbar-track {
-            background: #FFFFFFFF; /* 濃いグレー */
-        }
-
-        /* スクロールバーのつまみ（ドラッグする部分） */
-        main::-webkit-scrollbar-thumb {
-            background-color: #555; /* やや明るいグレー */
-            border-radius: 6px; /* 角を丸くする */
-            border: 3px solid #2e2e2e; /* トラックと同じ色の枠線で細く見せる */
-        }
-
-        /* つまみにマウスを乗せたときの色 */
-        main::-webkit-scrollbar-thumb:hover {
-            background-color: #777; /* さらに明るいグレー */
-        }
-    </style>
-""", unsafe_allow_html=True)
-
 GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY", "")
 
 if "ai_result_cache" not in st.session_state: st.session_state["ai_result_cache"] = ""
@@ -295,7 +262,7 @@ help_text = """
 ・✅N強制挿入がONの場合、本文頭に自動で全角「Ｎ」が挿入されます  
 　ＶＯや実況などの時は注意！  
 ・ナレーション本文の半角英数字は全て全角に変換されます  
-・✅ｍｍ：ｓｓで出力がONの場合タイムコードにコロンが入ります  
+・✅ｍｍ：ｓｓがONの場合タイムコードにコロンが入ります  
 ・✅誤字脱字チェックをONにするとAIが原稿の校正を行います  
 　注意箇所には🔴がつきます
   
@@ -323,7 +290,7 @@ if st.session_state["last_input_hash"] != cur_hash:
 # --- 3段目：コントロールエリア ---
 col1_opt, col2_opt, col3_opt, _ = st.columns([1.5, 2, 3, 7.5]) 
 with col1_opt: n_force_insert = st.checkbox("Ｎ強制挿入", value=True)
-with col2_opt: mm_ss_colon = st.checkbox("ｍｍ：ｓｓで出力", value=False)
+with col2_opt: mm_ss_colon = st.checkbox("ｍｍ：ｓｓ", value=False)
 with col3_opt: ai_check_flag = st.checkbox("誤字脱字チェック", value=False)
 
 # --- 4段目：変換実行と結果表示 ---
@@ -398,6 +365,7 @@ st.markdown(
 )
 
 st.markdown('<div style="height: 200px;"></div>', unsafe_allow_html=True)
+
 
 
 

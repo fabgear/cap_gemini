@@ -254,7 +254,7 @@ help_text = """
 　ＶＯや実況などの時は注意！  
 ・ナレーション本文の半角英数字は全て全角に変換されます  
 ・✅ｍｍ：ｓｓで出力がONの場合タイムコードにコロンが入ります  
-・✅誤字脱字チェックをONにするとAIがナレーションの校正を行い修正提案を表示します  
+・✅誤字脱字チェックをONにするとAIが原稿の校正を行います  
   
 """
 # ▲▲▲ ここまで ▲▲▲
@@ -345,6 +345,7 @@ else:
 # --- フッター ---
 st.markdown("---")
 st.markdown('<div style="text-align: right; font-size: 12px; color: #C5D6B9;">© 2025 kimika Inc.</div>', unsafe_allow_html=True)
+
 
 
 

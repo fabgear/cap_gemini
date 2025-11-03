@@ -252,7 +252,7 @@ if st.session_state["last_input_hash"] != cur_hash:
 col1_opt, col2_opt, col3_opt, _ = st.columns([1.5, 2, 2, 9]) 
 with col1_opt: n_force_insert = st.checkbox("N強制挿入", value=True)
 with col2_opt: mm_ss_colon = st.checkbox("ｍｍ：ｓｓで出力", value=False)
-with col3_opt: ai_check_flag = st.checkbox("誤字脱字をAIでチェック", value=False)
+with col3_opt: ai_check_flag = st.checkbox("誤字脱字チェック", value=False)
 
 # --- 4段目：変換実行と結果表示 ---
 if input_text:
@@ -323,5 +323,6 @@ else:
 # --- フッター ---
 st.markdown("---")
 st.markdown('<div style="text-align: right; font-size: 12px; color: #C5D6B9;">© 2025 kimika Inc.</div>', unsafe_allow_html=True)
+
 
 

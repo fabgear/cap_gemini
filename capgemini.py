@@ -40,6 +40,7 @@ def check_narration_with_gemini(narration_blocks, api_key):
         # 出力形式
         - 誤りがある場合のみ、以下のMarkdownテーブル形式で出力する。
         - 「No.」列には必ず元の番号を入れる。
+        - 「修正提案」列で誤字脱字を指摘する時は○○→△△のようにどう間違ってるか明確に記載。
         - 「理由」列は「〇〇の誤り」のように簡潔に記載する。
         
         【出力形式】
@@ -309,7 +310,7 @@ if input_text:
             ai_result_md = st.session_state.get("ai_result_cache", "")
             
             if ai_result_md and "問題ありませんでした" not in ai_result_md:
-                new_table_header = "| 開始タイム | 修正提案 | 理由 |\n|---|---|---|"
+                new_table_header = "| タイム | 修正提案 | 理由 |\n|---|---|---|"
                 new_table_rows = []
                 for line in ai_result_md.splitlines():
                     if line.strip().startswith('|') and '---' not in line and 'No.' not in line:
@@ -360,6 +361,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 
 

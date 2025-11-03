@@ -150,7 +150,7 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
         if should_insert_h_marker:
              output_lines.append("")
              output_lines.append(f"【{str(marker_hh_to_display).translate(to_zenkaku_num)}Ｈ】")
-             output_lines.append("")
+            # output_lines.append("")
         previous_end_hh = end_hh
         total_seconds_in_minute_loop = (start_mm % 60) * 60 + start_ss
         spacer = ""; is_half_time = False; base_time_str = ""
@@ -234,13 +234,13 @@ st.markdown("""<style> textarea { font-size: 14px !important; } </style>""", uns
 
 # --- 1段目：タイトル ---
 col1_top, col2_top = st.columns(2)
-with col1_top: st.header('ナレーション原稿形式に変換します')
-with col2_top: st.header('コピーしてお使いください')
+with col1_top: st.header('')
+with col2_top: st.header('')
 
 # --- 2段目：メインのテキストエリア ---
 col1_main, col2_main = st.columns(2)
 with col1_main:
-    input_text = st.text_area("　", height=500, placeholder="ここに元原稿をペーストして Ctrl+Enter を押してください。")
+    input_text = st.text_area("　ここに元原稿をペーストして Ctrl+Enter を押してください。", height=500, placeholder="")
 
 # --- キャッシュ管理 ---
 cur_hash = hash(input_text.strip())
@@ -318,8 +318,9 @@ if input_text:
             st.text_area("　", value="", height=500, disabled=True)
 else:
     with col2_main:
-        st.markdown('<div style="height: 538px;"></div>', unsafe_allow_html=True)
+        st.markdown('<div style="height: 500px;"></div>', unsafe_allow_html=True)
             
 # --- フッター ---
 st.markdown("---")
 st.markdown('<div style="text-align: right; font-size: 12px; color: #C5D6B9;">© 2025 kimika Inc.</div>', unsafe_allow_html=True)
+

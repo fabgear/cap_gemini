@@ -224,8 +224,8 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
 # ▼▼▼ Streamlit UI ▼▼▼
 # ===============================================================
 st.set_page_config(page_title="Caption to Narration", page_icon="📝", layout="wide")
-st.title('Caption to Narration')
-st.caption('Caption to Narration, seamlessly.')
+st.title('ProofBOX')
+st.caption('　ナレーション原稿作成ツール')
 
 GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY", "")
 
@@ -363,6 +363,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 
 

@@ -229,8 +229,33 @@ st.caption('　ナレーション原稿作成ツール')
 
 st.markdown("""
     <style>
+        /* レイアウト崩れを防ぐために、常にスクロール可能な高さを確保 */
         [data-testid="stAppViewContainer"] {
             min-height: 101vh;
+        }
+
+        /* --- スクロールバーのスタイル --- */
+
+        /* スクロールバー全体の幅 */
+        main::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        /* スクロールバーの背景（トラック） */
+        main::-webkit-scrollbar-track {
+            background: #2e2e2e; /* 濃いグレー */
+        }
+
+        /* スクロールバーのつまみ（ドラッグする部分） */
+        main::-webkit-scrollbar-thumb {
+            background-color: #555; /* やや明るいグレー */
+            border-radius: 6px; /* 角を丸くする */
+            border: 3px solid #2e2e2e; /* トラックと同じ色の枠線で細く見せる */
+        }
+
+        /* つまみにマウスを乗せたときの色 */
+        main::-webkit-scrollbar-thumb:hover {
+            background-color: #777; /* さらに明るいグレー */
         }
     </style>
 """, unsafe_allow_html=True)
@@ -373,6 +398,7 @@ st.markdown(
 )
 
 st.markdown('<div style="height: 200px;"></div>', unsafe_allow_html=True)
+
 
 
 

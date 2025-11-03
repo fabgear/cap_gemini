@@ -241,16 +241,13 @@ with col2_top: st.header('')
 
 # --- 2段目：メインのテキストエリア【変更】---
 # ▼▼▼ placeholderとhelp用のテキストを定義 ▼▼▼
-placeholder_text = """①キャプションをテキストで書き出した形式
+placeholder_text = """**対応フォーマット**
 00;00;00;00 - 00;00;02;29
 N ああああ
 
-②xmlをサイトで変換した形式
 ００:００:１５　〜　００:００：１８
 N ああああ
 
-どちらにも対応しています
-①の方が細かい変換に対応しているためオススメです
 """
 
 help_text = """
@@ -365,6 +362,7 @@ st.markdown(
 )
 
 st.markdown('<div style="height: 200px;"></div>', unsafe_allow_html=True)
+
 
 
 

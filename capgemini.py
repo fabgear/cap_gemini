@@ -210,7 +210,7 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
             else: formatted_end_time = f"{adj_ss:02d}".translate(to_zenkaku_num)
             end_string = f" (～{formatted_end_time})"
 
-        line_prefix = "🔴 " if i in highlight_indices else ""
+        line_prefix = "🔴" if i in highlight_indices else ""
         if n_force_insert_flag:
             output_lines.append(f"{line_prefix}{formatted_start_time}{spacer}{speaker_symbol}　{body}{end_string}")
         else:
@@ -265,6 +265,7 @@ help_text = """
 ・ナレーション本文の半角英数字は全て全角に変換されます  
 ・✅ｍｍ：ｓｓで出力がONの場合タイムコードにコロンが入ります  
 ・✅誤字脱字チェックをONにするとAIが原稿の校正を行います  
+　注意箇所には🔴がつきます
   
 """
 # ▲▲▲ ここまで ▲▲▲
@@ -363,6 +364,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 
 

@@ -139,7 +139,8 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
                 i += 1
             
             # 収集した複数行の本文を半角スペースで連結
-            text_val = " ".join(text_lines)
+            text_val = "\n".join(text_lines)
+            #text_val = " ".join(text_lines)
             blocks.append({'time': time_val, 'text': text_val})
         else:
             # タイムコードで始まらない行はスキップ
@@ -234,12 +235,38 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
             if start_hh != end_hh or (start_mm % 60) != adj_mm_display: formatted_end_time = f"{adj_mm_display:02d}{adj_ss:02d}".translate(to_zenkaku_num)
             else: formatted_end_time = f"{adj_ss:02d}".translate(to_zenkaku_num)
             end_string = f" ／{formatted_end_time}" #エンドタイムのフォーマット
-
+### ▼▼▼ 変更点② ▼▼▼
+        # 出力ロジックを複数行対応に変更
         line_prefix = "🔴" if i in highlight_indices else ""
+        body_lines = body.split('\n')
+        num_body_lines = len(body_lines)
+
+        # 2行目以降のインデントを計算
         if n_force_insert_flag:
-            output_lines.append(f"{line_prefix}{formatted_start_time}{spacer}{speaker_symbol}　{body}{end_string}")
+            indent_len = len(formatted_start_time) + len(spacer) + len(speaker_symbol) + 1
         else:
-            output_lines.append(f"{line_prefix}{formatted_start_time}{spacer}{body}{end_string}")
+            indent_len = len(formatted_start_time) + len(spacer)
+        indent_space = '　' * indent_len
+
+        # 1行目を出力
+        first_line_text = body_lines[0]
+        # 本文が1行しかない場合にのみエンドタイムを付ける
+        first_line_end_string = end_string if num_body_lines == 1 else ""
+        if n_force_insert_flag:
+            output_lines.append(f"{line_prefix}{formatted_start_time}{spacer}{speaker_symbol}　{first_line_text}{first_line_end_string}")
+        else:
+            output_lines.append(f"{line_prefix}{formatted_start_time}{spacer}{first_line_text}{first_line_end_string}")
+
+        # 2行目以降があれば、インデントを付けて出力
+        if num_body_lines > 1:
+            # 中間行（2行目から最後から2番目の行まで）
+            for line_text in body_lines[1:-1]:
+                output_lines.append(f"{indent_space}{line_text}")
+            # 最終行にエンドタイムを付けて出力
+            last_line_text = body_lines[-1]
+            output_lines.append(f"{indent_space}{last_line_text}{end_string}")
+        
+        ### ▲▲▲ 変更点② ▲▲▲
 
         if add_blank_line and i < len(parsed_blocks) - 1:
             output_lines.append("")
@@ -393,6 +420,7 @@ st.markdown(
 )
 
 st.markdown('<div style="height: 200px;"></div>', unsafe_allow_html=True)
+
 
 
 

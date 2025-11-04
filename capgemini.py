@@ -285,15 +285,11 @@ placeholder_text = """Supported Formats
   
 ➤ Recommended:
 00;00;00;00 - 00;00;02;29
-N今日は絶対勝つという意思で
-　がんばろう
-(空行)
-00;00;03;00 - 00;00;05;00
-N次のナレーション
+Nああああ
 
 ➤ Standard:
 ００:００:１５　〜　００:００：１８
-Nこれは一行です
+Nああああ
 """
 
 help_text = """
@@ -411,3 +407,4 @@ st.markdown(
 )
 
 st.markdown('<div style="height: 200px;"></div>', unsafe_allow_html=True)
+

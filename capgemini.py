@@ -194,13 +194,23 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
         
         # --- 1. まず、入力テキストから話者と本文を分離する ---
         parsed_speaker = ''
-        parsed_body = text_content
+        parsed_body = ''
         
-        # 行頭が「(英数字や記号)＋(スペース)」の形式なら、話者と見なす
-        match = re.match(r'^(\S+?)[\s　]+(.*)', text_content, re.DOTALL)
-        if match:
-            parsed_speaker = match.group(1)
-            parsed_body = match.group(2)
+        # パターンA: 「Nテキスト」や「N: テキスト」のように、Nで始まる場合 (スペース無しも許容)
+        n_match = re.match(r'^[\s　]*([NnＮｎ])(?:[\s　]*[：:])?(?![A-Za-z0-9])[\s　]*(.*)$', text_content, re.DOTALL)
+        # パターンB: 「VO テキスト」のように、記号＋スペースで始まる場合
+        space_match = re.match(r'^(\S+?)[\s　]+(.*)', text_content, re.DOTALL)
+
+        if n_match:
+            parsed_speaker = n_match.group(1)
+            parsed_body = n_match.group(2)
+        elif space_match:
+            parsed_speaker = space_match.group(1)
+            parsed_body = space_match.group(2)
+        else:
+            # どちらにも一致しない場合は、全体を本文と見なす
+            parsed_speaker = ''
+            parsed_body = text_content
 
         # --- 2. 「N強制挿入」フラグに応じて最終的な話者と本文を決める ---
         speaker_symbol = ''
@@ -208,11 +218,9 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
         
         if n_force_insert_flag:
             speaker_symbol = 'Ｎ' # 話者記号を「Ｎ」で上書き
-            
             # 元のテキストの先頭がN記号だった場合、それを取り除いた部分を本文とする
-            n_match = re.match(r'^[\s　]*[NnＮｎ](?:[\s　]*[：:])?(?![A-Za-z0-9])[\s　]*(.*)$', text_content, re.DOTALL)
             if n_match:
-                body = n_match.group(1)
+                 body = n_match.group(2)
             else:
                 # N記号で始まらない場合は、入力テキスト全体を本文とする
                 body = text_content
@@ -248,6 +256,7 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
         # 1行目の、本文が始まる前までの部分を組み立てる
         first_line_prefix_parts = [formatted_start_time, spacer]
         if speaker_symbol:
+            # 話者記号がある場合は、記号と全角スペースを追加
             first_line_prefix_parts.append(f"{speaker_symbol}　")
         first_line_prefix = "".join(first_line_prefix_parts)
         

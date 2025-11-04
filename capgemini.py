@@ -129,10 +129,9 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
                 if re.match(time_pattern, next_normalized):
                     break
 
-                text_lines.append(relevant_lines[i]) # .strip()を削除して、元のインデントを維持
+                text_lines.append(relevant_lines[i])
                 i += 1
             
-            ### ▼▼▼ 変更点①：連結方法を「改行」にする ▼▼▼
             text_val = "\n".join(text_lines)
             blocks.append({'time': time_val, 'text': text_val})
         else:
@@ -190,26 +189,43 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
         formatted_start_time = f"{colon_time_str.translate(to_zenkaku_num)}半" if is_half_time else colon_time_str.translate(to_zenkaku_num)
         block_start_times.append(formatted_start_time)
         
-        speaker_symbol = 'Ｎ'; text_content = block['text']; body = ""
+        ### ▼▼▼ 変更点①：話者と本文を分離するロジックを全面的に刷新 ▼▼▼
+        text_content = block['text']
+        
+        # --- 1. まず、入力テキストから話者と本文を分離する ---
+        parsed_speaker = ''
+        parsed_body = text_content
+        
+        # 行頭が「(英数字や記号)＋(スペース)」の形式なら、話者と見なす
+        match = re.match(r'^(\S+?)[\s　]+(.*)', text_content, re.DOTALL)
+        if match:
+            parsed_speaker = match.group(1)
+            parsed_body = match.group(2)
+
+        # --- 2. 「N強制挿入」フラグに応じて最終的な話者と本文を決める ---
+        speaker_symbol = ''
+        body = ''
+        
         if n_force_insert_flag:
-            tc = text_content # .strip() を削除
-            ### ▼▼▼ 変更点②：正規表現に re.DOTALL を追加して改行に対応 ▼▼▼
-            m_leading_n = re.match(r'^[\s　]*([NnＮｎ])(?:[\s　]*[：:])?(?![A-Za-z0-9])[\s　]*(.*)$', tc, re.DOTALL)
-            if m_leading_n: speaker_symbol = 'Ｎ'; body = m_leading_n.group(2).strip(' \u3000') # 先頭と末尾の空白のみ除去
+            speaker_symbol = 'Ｎ' # 話者記号を「Ｎ」で上書き
+            
+            # 元のテキストの先頭がN記号だった場合、それを取り除いた部分を本文とする
+            n_match = re.match(r'^[\s　]*[NnＮｎ](?:[\s　]*[：:])?(?![A-Za-z0-9])[\s　]*(.*)$', text_content, re.DOTALL)
+            if n_match:
+                body = n_match.group(1)
             else:
-                match = re.match(r'^(\S+)[\s　]+(.*)', text_content, re.DOTALL)
-                if match:
-                    raw_speaker = match.group(1); body = match.group(2).strip(' \u3000') # .strip()の挙動を明確化
-                    if raw_speaker.upper() in ('N', 'Ｎ'): speaker_symbol = 'Ｎ'
-                    else: speaker_symbol = raw_speaker.translate(to_zenkaku_all)
-                else:
-                    if tc.upper().strip() in ('N', 'Ｎ'): body = ""
-                    else: body = tc
-            if not body: body = "※注意！本文なし！"
+                # N記号で始まらない場合は、入力テキスト全体を本文とする
+                body = text_content
         else:
-            speaker_symbol = ''; body = text_content
-            if not body.strip(): body = "※注意！本文なし！"
+            # OFFの場合は、最初に分離した結果をそのまま使う
+            speaker_symbol = parsed_speaker.translate(to_zenkaku_all)
+            body = parsed_body
+
+        body = body.strip(' \u3000') # 本文の前後にある不要な空白を削除
+        if not body: body = "※注意！本文なし！"
         body = body.translate(to_zenkaku_all)
+        ### ▲▲▲ 変更点① ▲▲▲
+
         end_string = ""; add_blank_line = True
         if i + 1 < len(parsed_blocks):
             next_block = parsed_blocks[i+1]
@@ -225,34 +241,30 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
             else: formatted_end_time = f"{adj_ss:02d}".translate(to_zenkaku_num)
             end_string = f" ／{formatted_end_time}"
 
-        ### ▼▼▼ 変更点③：複数行の出力とインデントに対応したロジック ▼▼▼
+        ### ▼▼▼ 変更点②：インデント計算と出力ロジックを改善 ▼▼▼
         line_prefix = "🔴" if i in highlight_indices else ""
         body_lines = body.split('\n')
         
-        # 2行目以降のインデント（字下げ）スペースを計算
-        if n_force_insert_flag:
-            # 「タイムコード」「区切り」「話者記号」「区切り」の文字数
-            indent_len = len(formatted_start_time) + len(spacer) + len(speaker_symbol) + 1
-        else:
-            # 「タイムコード」「区切り」の文字数
-            indent_len = len(formatted_start_time) + len(spacer)
-        indent_space = '　' * indent_len
-
+        # 1行目の、本文が始まる前までの部分を組み立てる
+        first_line_prefix_parts = [formatted_start_time, spacer]
+        if speaker_symbol:
+            first_line_prefix_parts.append(f"{speaker_symbol}　")
+        first_line_prefix = "".join(first_line_prefix_parts)
+        
+        # 2行目以降のインデントを、1行目の接頭辞の長さに合わせて動的に生成
+        indent_space = '　' * len(first_line_prefix)
+        
         # 1行目を出力
         first_line_text = body_lines[0].lstrip(' \u3000')
         end_string_for_first_line = end_string if len(body_lines) == 1 else ""
-        if n_force_insert_flag:
-            output_lines.append(f"{line_prefix}{formatted_start_time}{spacer}{speaker_symbol}　{first_line_text}{end_string_for_first_line}")
-        else:
-            output_lines.append(f"{line_prefix}{formatted_start_time}{spacer}{first_line_text}{end_string_for_first_line}")
+        output_lines.append(f"{line_prefix}{first_line_prefix}{first_line_text}{end_string_for_first_line}")
         
         # 2行目以降があれば、インデントを付けて出力
         if len(body_lines) > 1:
             for k, line_text in enumerate(body_lines[1:]):
-                # 最後の行にだけエンドタイムを付ける
                 end_string_for_this_line = end_string if k == len(body_lines) - 2 else ""
                 output_lines.append(f"{indent_space}{line_text.lstrip(' \\u3000')}{end_string_for_this_line}")
-        ### ▲▲▲ 変更点③ ▲▲▲
+        ### ▲▲▲ 変更点② ▲▲▲
 
         if add_blank_line and i < len(parsed_blocks) - 1:
             output_lines.append("")
@@ -285,11 +297,15 @@ placeholder_text = """Supported Formats
   
 ➤ Recommended:
 00;00;00;00 - 00;00;02;29
-Nああああ
-
+N今日は絶対勝つという意思で
+　がんばろう
+(空行)
+00;00;03;00 - 00;00;05;00
+次のナレーション
+(空行)
 ➤ Standard:
 ００:００:１５　〜　００:００：１８
-Nああああ
+これは一行です
 """
 
 help_text = """
@@ -407,4 +423,3 @@ st.markdown(
 )
 
 st.markdown('<div style="height: 200px;"></div>', unsafe_allow_html=True)
-

@@ -106,12 +106,9 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
     relevant_lines = lines[start_index:]
     blocks = []
     i = 0
-
-### ▼▼▼ 変更 ▼▼▼
-    # 元のロジックを全面的に修正
     while i < len(relevant_lines):
         current_line = relevant_lines[i].strip()
-        if not current_line: # 空行はスキップ
+        if not current_line:
             i += 1
             continue
 
@@ -122,31 +119,24 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
             time_val = current_line
             text_lines = []
             
-            # 次の行から本文を収集
             i += 1
             while i < len(relevant_lines):
-                # 次の行が空行なら、それがブロックの区切り
                 if not relevant_lines[i].strip():
                     break
                 
-                # 次の行が新しいタイムコードの場合もブロックの区切りとみなす（安全のため）
                 next_line_with_frames = re.sub(r'(\d{2}:\d{2}:\d{2})(?![:.]\d{2})', r'\1.00', relevant_lines[i].strip())
                 next_normalized = next_line_with_frames.translate(to_hankaku_time).replace('~', '-')
                 if re.match(time_pattern, next_normalized):
                     break
 
-                text_lines.append(relevant_lines[i].strip())
+                text_lines.append(relevant_lines[i]) # .strip()を削除して、元のインデントを維持
                 i += 1
             
-            # 収集した複数行の本文を半角スペースで連結
-            text_val = " ".join(text_lines)
+            ### ▼▼▼ 変更点①：連結方法を「改行」にする ▼▼▼
+            text_val = "\n".join(text_lines)
             blocks.append({'time': time_val, 'text': text_val})
         else:
-            # タイムコードで始まらない行はスキップ
             i += 1
-    ### ▲▲▲ 変更 ▲▲▲
-
-    
         
     output_lines = []
     narration_blocks_for_ai = []
@@ -183,7 +173,6 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
         if should_insert_h_marker:
              output_lines.append("")
              output_lines.append(f"【{str(marker_hh_to_display).translate(to_zenkaku_num)}Ｈ】")
-           #  output_lines.append("")
         previous_end_hh = end_hh
         total_seconds_in_minute_loop = (start_mm % 60) * 60 + start_ss
         spacer = ""; is_half_time = False; base_time_str = ""
@@ -203,17 +192,18 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
         
         speaker_symbol = 'Ｎ'; text_content = block['text']; body = ""
         if n_force_insert_flag:
-            tc = text_content.strip()
-            m_leading_n = re.match(r'^[\s　]*([NnＮｎ])(?:[\s　]*[：:])?(?![A-Za-z0-9])[\s　]*(.*)$', tc)
-            if m_leading_n: speaker_symbol = 'Ｎ'; body = m_leading_n.group(2).lstrip().lstrip('　')
+            tc = text_content # .strip() を削除
+            ### ▼▼▼ 変更点②：正規表現に re.DOTALL を追加して改行に対応 ▼▼▼
+            m_leading_n = re.match(r'^[\s　]*([NnＮｎ])(?:[\s　]*[：:])?(?![A-Za-z0-9])[\s　]*(.*)$', tc, re.DOTALL)
+            if m_leading_n: speaker_symbol = 'Ｎ'; body = m_leading_n.group(2).strip(' \u3000') # 先頭と末尾の空白のみ除去
             else:
-                match = re.match(r'^(\S+)[\s　]+(.*)', text_content)
+                match = re.match(r'^(\S+)[\s　]+(.*)', text_content, re.DOTALL)
                 if match:
-                    raw_speaker = match.group(1); body = match.group(2).strip()
+                    raw_speaker = match.group(1); body = match.group(2).strip(' \u3000') # .strip()の挙動を明確化
                     if raw_speaker.upper() in ('N', 'Ｎ'): speaker_symbol = 'Ｎ'
                     else: speaker_symbol = raw_speaker.translate(to_zenkaku_all)
                 else:
-                    if tc.upper() in ('N', 'Ｎ'): body = ""
+                    if tc.upper().strip() in ('N', 'Ｎ'): body = ""
                     else: body = tc
             if not body: body = "※注意！本文なし！"
         else:
@@ -233,13 +223,36 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
             adj_mm_display = adj_mm % 60
             if start_hh != end_hh or (start_mm % 60) != adj_mm_display: formatted_end_time = f"{adj_mm_display:02d}{adj_ss:02d}".translate(to_zenkaku_num)
             else: formatted_end_time = f"{adj_ss:02d}".translate(to_zenkaku_num)
-            end_string = f" ／{formatted_end_time}" #エンドタイムのフォーマット
+            end_string = f" ／{formatted_end_time}"
 
+        ### ▼▼▼ 変更点③：複数行の出力とインデントに対応したロジック ▼▼▼
         line_prefix = "🔴" if i in highlight_indices else ""
+        body_lines = body.split('\n')
+        
+        # 2行目以降のインデント（字下げ）スペースを計算
         if n_force_insert_flag:
-            output_lines.append(f"{line_prefix}{formatted_start_time}{spacer}{speaker_symbol}　{body}{end_string}")
+            # 「タイムコード」「区切り」「話者記号」「区切り」の文字数
+            indent_len = len(formatted_start_time) + len(spacer) + len(speaker_symbol) + 1
         else:
-            output_lines.append(f"{line_prefix}{formatted_start_time}{spacer}{body}{end_string}")
+            # 「タイムコード」「区切り」の文字数
+            indent_len = len(formatted_start_time) + len(spacer)
+        indent_space = '　' * indent_len
+
+        # 1行目を出力
+        first_line_text = body_lines[0].lstrip(' \u3000')
+        end_string_for_first_line = end_string if len(body_lines) == 1 else ""
+        if n_force_insert_flag:
+            output_lines.append(f"{line_prefix}{formatted_start_time}{spacer}{speaker_symbol}　{first_line_text}{end_string_for_first_line}")
+        else:
+            output_lines.append(f"{line_prefix}{formatted_start_time}{spacer}{first_line_text}{end_string_for_first_line}")
+        
+        # 2行目以降があれば、インデントを付けて出力
+        if len(body_lines) > 1:
+            for k, line_text in enumerate(body_lines[1:]):
+                # 最後の行にだけエンドタイムを付ける
+                end_string_for_this_line = end_string if k == len(body_lines) - 2 else ""
+                output_lines.append(f"{indent_space}{line_text.lstrip(' \\u3000')}{end_string_for_this_line}")
+        ### ▲▲▲ 変更点③ ▲▲▲
 
         if add_blank_line and i < len(parsed_blocks) - 1:
             output_lines.append("")
@@ -272,11 +285,15 @@ placeholder_text = """Supported Formats
   
 ➤ Recommended:
 00;00;00;00 - 00;00;02;29
-Nああああ
+N今日は絶対勝つという意思で
+　がんばろう
+(空行)
+00;00;03;00 - 00;00;05;00
+N次のナレーション
 
 ➤ Standard:
 ００:００:１５　〜　００:００：１８
-Nああああ
+Nこれは一行です
 """
 
 help_text = """
@@ -293,7 +310,8 @@ help_text = """
 【フォーマット】  
 ・Premiereのキャプションをテキストで書き出した形式が  
 　半秒単位でタイムが出るのでオススメです  
-・サイトでxmlから変換したフォーマットも使えます  
+・サイトでxmlから変換したフォーマットも使えます
+・複数行のナレーションは、ブロックの最後に「空行」を入れてください。
 """
 # ▲▲▲ ここまで ▲▲▲
 

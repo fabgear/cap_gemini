@@ -189,50 +189,50 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
         formatted_start_time = f"{colon_time_str.translate(to_zenkaku_num)}半" if is_half_time else colon_time_str.translate(to_zenkaku_num)
         block_start_times.append(formatted_start_time)
         
-        ### ▼▼▼ 変更点①：話者と本文を分離するロジックを全面的に刷新 ▼▼▼
-        text_content = block['text']
-        
-        # --- 1. まず、入力テキストから話者と本文を分離する ---
+        ### ▼▼▼ 変更点：話者分離ロジックの改善 ▼▼▼
+        text_content = block['text'].strip(' \u3000')
+
+        # --- 1. 話者と本文を分離（1行目のみを解析対象とする）---
         parsed_speaker = ''
-        parsed_body = ''
+        parsed_body_content = ''
         
-        # パターンA: 「Nテキスト」や「N: テキスト」のように、Nで始まる場合 (スペース無しも許容)
-        n_match = re.match(r'^[\s　]*([NnＮｎ])(?:[\s　]*[：:])?(?![A-Za-z0-9])[\s　]*(.*)$', text_content, re.DOTALL)
-        # パターンB: 「VO テキスト」のように、記号＋スペースで始まる場合
-        space_match = re.match(r'^(\S+?)[\s　]+(.*)', text_content, re.DOTALL)
+        content_lines = text_content.split('\n')
+        first_line = content_lines[0]
+        remaining_lines = content_lines[1:]
+
+        n_match = re.match(r'^[\s　]*([NnＮｎ])(?:[\s　]*[：:])?(?![A-Za-z0-9])[\s　]*(.*)$', first_line)
+        space_match = re.match(r'^(\S+?)[\s　]+(.*)', first_line)
 
         if n_match:
             parsed_speaker = n_match.group(1)
-            parsed_body = n_match.group(2)
+            first_line_body = n_match.group(2)
+            parsed_body_content = "\n".join([first_line_body] + remaining_lines)
         elif space_match:
             parsed_speaker = space_match.group(1)
-            parsed_body = space_match.group(2)
+            first_line_body = space_match.group(2)
+            parsed_body_content = "\n".join([first_line_body] + remaining_lines)
         else:
-            # どちらにも一致しない場合は、全体を本文と見なす
             parsed_speaker = ''
-            parsed_body = text_content
+            parsed_body_content = text_content
 
-        # --- 2. 「N強制挿入」フラグに応じて最終的な話者と本文を決める ---
+        # --- 2. 「N強制挿入」フラグに応じて最終的な話者と本文を決定 ---
         speaker_symbol = ''
         body = ''
         
         if n_force_insert_flag:
-            speaker_symbol = 'Ｎ' # 話者記号を「Ｎ」で上書き
-            # 元のテキストの先頭がN記号だった場合、それを取り除いた部分を本文とする
+            speaker_symbol = 'Ｎ'
             if n_match:
-                 body = n_match.group(2)
+                body = parsed_body_content
             else:
-                # N記号で始まらない場合は、入力テキスト全体を本文とする
                 body = text_content
         else:
-            # OFFの場合は、最初に分離した結果をそのまま使う
             speaker_symbol = parsed_speaker.translate(to_zenkaku_all)
-            body = parsed_body
+            body = parsed_body_content
 
-        body = body.strip(' \u3000') # 本文の前後にある不要な空白を削除
+        body = body.strip(' \u3000')
         if not body: body = "※注意！本文なし！"
         body = body.translate(to_zenkaku_all)
-        ### ▲▲▲ 変更点① ▲▲▲
+        ### ▲▲▲ 変更ここまで ▲▲▲
 
         end_string = ""; add_blank_line = True
         if i + 1 < len(parsed_blocks):
@@ -249,31 +249,24 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
             else: formatted_end_time = f"{adj_ss:02d}".translate(to_zenkaku_num)
             end_string = f" ／{formatted_end_time}"
 
-        ### ▼▼▼ 変更点②：インデント計算と出力ロジックを改善 ▼▼▼
         line_prefix = "🔴" if i in highlight_indices else ""
         body_lines = body.split('\n')
         
-        # 1行目の、本文が始まる前までの部分を組み立てる
         first_line_prefix_parts = [formatted_start_time, spacer]
         if speaker_symbol:
-            # 話者記号がある場合は、記号と全角スペースを追加
             first_line_prefix_parts.append(f"{speaker_symbol}　")
-        first_line_prefix = "".join(first_line_prefix_parts)
         
-        # 2行目以降のインデントを、1行目の接頭辞の長さに合わせて動的に生成
+        first_line_prefix = "".join(first_line_prefix_parts)
         indent_space = '　' * len(first_line_prefix)
         
-        # 1行目を出力
         first_line_text = body_lines[0].lstrip(' \u3000')
         end_string_for_first_line = end_string if len(body_lines) == 1 else ""
         output_lines.append(f"{line_prefix}{first_line_prefix}{first_line_text}{end_string_for_first_line}")
         
-        # 2行目以降があれば、インデントを付けて出力
         if len(body_lines) > 1:
             for k, line_text in enumerate(body_lines[1:]):
                 end_string_for_this_line = end_string if k == len(body_lines) - 2 else ""
                 output_lines.append(f"{indent_space}{line_text.lstrip(' \\u3000')}{end_string_for_this_line}")
-        ### ▲▲▲ 変更点② ▲▲▲
 
         if add_blank_line and i < len(parsed_blocks) - 1:
             output_lines.append("")

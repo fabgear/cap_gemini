@@ -150,6 +150,7 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
         
         groups = time_match.groups()
         start_hh, start_mm, start_ss, start_fr, end_hh, end_mm, end_ss, end_fr = [int(g or 0) for g in groups]
+        # AIに渡すデータは元のテキストをそのまま使う
         narration_blocks_for_ai.append({'time': block['time'].strip(), 'text': block['text'].strip()})
         parsed_blocks.append({
             'start_hh': start_hh, 'start_mm': start_mm, 'start_ss': start_ss, 'start_fr': start_fr,
@@ -189,45 +190,24 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
         formatted_start_time = f"{colon_time_str.translate(to_zenkaku_num)}半" if is_half_time else colon_time_str.translate(to_zenkaku_num)
         block_start_times.append(formatted_start_time)
         
-        ### ▼▼▼ 変更点：話者分離ロジックの改善 ▼▼▼
+        ### ▼▼▼ 変更点：話者分離ロジックを最終修正 ▼▼▼
         text_content = block['text'].strip(' \u3000')
-
-        # --- 1. 話者と本文を分離（1行目のみを解析対象とする）---
-        parsed_speaker = ''
-        parsed_body_content = ''
-        
-        content_lines = text_content.split('\n')
-        first_line = content_lines[0]
-        remaining_lines = content_lines[1:]
-
-        n_match = re.match(r'^[\s　]*([NnＮｎ])(?:[\s　]*[：:])?(?![A-Za-z0-9])[\s　]*(.*)$', first_line)
-        space_match = re.match(r'^(\S+?)[\s　]+(.*)', first_line)
-
-        if n_match:
-            parsed_speaker = n_match.group(1)
-            first_line_body = n_match.group(2)
-            parsed_body_content = "\n".join([first_line_body] + remaining_lines)
-        elif space_match:
-            parsed_speaker = space_match.group(1)
-            first_line_body = space_match.group(2)
-            parsed_body_content = "\n".join([first_line_body] + remaining_lines)
-        else:
-            parsed_speaker = ''
-            parsed_body_content = text_content
-
-        # --- 2. 「N強制挿入」フラグに応じて最終的な話者と本文を決定 ---
         speaker_symbol = ''
         body = ''
         
         if n_force_insert_flag:
             speaker_symbol = 'Ｎ'
+            # 元のテキストの先頭がN記号だった場合、それを取り除いた部分を本文とする
+            n_match = re.match(r'^[\s　]*[NnＮｎ](?:[\s　]*[：:])?(?![A-Za-z0-9])[\s　]*(.*)$', text_content, re.DOTALL)
             if n_match:
-                body = parsed_body_content
+                body = n_match.group(1)
             else:
+                # N記号で始まらない場合は、入力テキスト全体を本文とする
                 body = text_content
         else:
-            speaker_symbol = parsed_speaker.translate(to_zenkaku_all)
-            body = parsed_body_content
+            # OFFの時は、話者判定を行わず、入力全体を本文とする
+            speaker_symbol = ''
+            body = text_content
 
         body = body.strip(' \u3000')
         if not body: body = "※注意！本文なし！"
@@ -314,8 +294,9 @@ help_text = """
   
 【機能詳細】  
 ・ENDタイムとH（時間）をまたぐ時の仕切り自動挿入  
-・✅N強制挿入がONの場合、本文頭に自動で全角「Ｎ」が挿入されます  
-　ＶＯや実況などの時は注意！  
+・✅**N強制挿入がON**の場合、全てのブロックの頭に自動で全角「Ｎ」が挿入されます。  
+　元の原稿に`N`があってもなくても、`Ｎ`が付きます。
+・✅**N強制挿入がOFF**の場合、話者記号は挿入されず、入力されたテキストが全て本文になります。
 ・ナレーション本文の半角英数字は全て全角に変換されます  
 ・✅ｍｍ：ｓｓがONの場合タイムコードにコロンが入ります  
 ・✅誤字脱字チェックをONにするとAIが原稿の校正を行います  

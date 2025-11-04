@@ -269,9 +269,9 @@ if "last_input_hash" not in st.session_state: st.session_state["last_input_hash"
 st.markdown("""<style> textarea { font-size: 14px !important; } </style>""", unsafe_allow_html=True)
 
 # --- 1段目：タイトル ---
-col1_top, col2_top = st.columns(2)
-with col1_top: st.header('')
-with col2_top: st.header('')
+#col1_top, col2_top = st.columns(2)
+#with col1_top: st.header('')
+#with col2_top: st.header('')
 
 # --- 2段目：メインのテキストエリア【変更】---
 # ▼▼▼ placeholderとhelp用のテキストを定義 ▼▼▼
@@ -401,6 +401,7 @@ st.markdown(
 )
 
 st.markdown('<div style="height: 200px;"></div>', unsafe_allow_html=True)
+
 
 
 

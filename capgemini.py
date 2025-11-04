@@ -106,20 +106,47 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
     relevant_lines = lines[start_index:]
     blocks = []
     i = 0
+
+### ▼▼▼ 変更 ▼▼▼
+    # 元のロジックを全面的に修正
     while i < len(relevant_lines):
         current_line = relevant_lines[i].strip()
+        if not current_line: # 空行はスキップ
+            i += 1
+            continue
+
         line_with_frames = re.sub(r'(\d{2}:\d{2}:\d{2})(?![:.]\d{2})', r'\1.00', current_line)
         normalized_line = line_with_frames.translate(to_hankaku_time).replace('~', '-')
+
         if re.match(time_pattern, normalized_line):
             time_val = current_line
-            text_val = ""
-            if i + 1 < len(relevant_lines):
-                next_line = relevant_lines[i+1].strip()
-                if not re.match(time_pattern, re.sub(r'(\d{2}:\d{2}:\d{2})(?![:.]\d{2})', r'\1.00', next_line).translate(to_hankaku_time).replace('~', '-')):
-                    text_val = next_line
-                    i += 1
+            text_lines = []
+            
+            # 次の行から本文を収集
+            i += 1
+            while i < len(relevant_lines):
+                # 次の行が空行なら、それがブロックの区切り
+                if not relevant_lines[i].strip():
+                    break
+                
+                # 次の行が新しいタイムコードの場合もブロックの区切りとみなす（安全のため）
+                next_line_with_frames = re.sub(r'(\d{2}:\d{2}:\d{2})(?![:.]\d{2})', r'\1.00', relevant_lines[i].strip())
+                next_normalized = next_line_with_frames.translate(to_hankaku_time).replace('~', '-')
+                if re.match(time_pattern, next_normalized):
+                    break
+
+                text_lines.append(relevant_lines[i].strip())
+                i += 1
+            
+            # 収集した複数行の本文を半角スペースで連結
+            text_val = " ".join(text_lines)
             blocks.append({'time': time_val, 'text': text_val})
-        i += 1
+        else:
+            # タイムコードで始まらない行はスキップ
+            i += 1
+    ### ▲▲▲ 変更 ▲▲▲
+
+    
         
     output_lines = []
     narration_blocks_for_ai = []
@@ -366,6 +393,7 @@ st.markdown(
 )
 
 st.markdown('<div style="height: 200px;"></div>', unsafe_allow_html=True)
+
 
 
 

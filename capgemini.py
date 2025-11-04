@@ -282,7 +282,7 @@ placeholder_text = """Supported Formats
 Nああああ
 
 ➤ Standard:
-００:００:１５　〜　００:００：１８
+００:００:１５　〜　００:００:１８
 Nああああ
 
 """
@@ -401,5 +401,6 @@ st.markdown(
 )
 
 st.markdown('<div style="height: 200px;"></div>', unsafe_allow_html=True)
+
 
 

@@ -259,13 +259,7 @@ def convert_narration_script(text, n_force_insert_flag=True, mm_ss_colon_flag=Fa
 # ===============================================================
 st.set_page_config(page_title="Syncraft", page_icon="📝", layout="wide")
 
-st.markdown("""
-    <style>
-           .main .block-container {
-                padding-top: 1rem;
-            }
-    </style>
-    """, unsafe_allow_html=True)
+
 
 st.title('Syncraft')
 st.caption('　ナレーション原稿作成ツール with gemini(β)')
@@ -410,6 +404,7 @@ st.markdown(
 )
 
 st.markdown('<div style="height: 200px;"></div>', unsafe_allow_html=True)
+
 
 
 

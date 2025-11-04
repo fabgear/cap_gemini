@@ -33,7 +33,7 @@ def check_narration_with_gemini(narration_blocks, api_key):
         # 制約条件
         - ナレーション特有の句読点やスペースは修正しない。
         - 芸能人の名前は正しく校正する。
-        - 本文の半分が同じ文章のナレーションが続いた場合指摘する。
+        - 出だし４文字が同じナレーションが続いた場合指摘する。
         - 文末が不自然でも、意図的なものとして修正しない。
         - 漢数字は使用せず、算用数字のままにする。
         - 誤りがない場合は「問題ありませんでした。」とだけ出力する。
@@ -406,6 +406,7 @@ st.markdown(
 )
 
 st.markdown('<div style="height: 200px;"></div>', unsafe_allow_html=True)
+
 
 
 
